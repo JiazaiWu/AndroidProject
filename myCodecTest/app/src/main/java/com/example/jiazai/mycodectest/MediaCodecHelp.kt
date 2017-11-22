@@ -19,17 +19,15 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class MediaCodecHelp: Thread{
     constructor(mediaProjection: MediaProjection?) {
-        prepare()
-        mMediaProjection = mediaProjection
-        mVirtualDisplay = mMediaProjection!!.createVirtualDisplay(TAG+"-display",
-                mWidth, mHeight,1, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
-                mInputSurface, null, null)
+        prepareEncoder()
+        prepareWriter()
+        prepareSurfaceSource(mediaProjection)
     }
 
-    override fun run() = testMediaCodec()
+    override fun run() = runRecording()
 
 
-    fun testMediaCodec() {
+    fun runRecording() {
         try {
             for (i in 1 until maxframe) {
                 drainEncoder(false)
@@ -45,7 +43,7 @@ class MediaCodecHelp: Thread{
         mQuit.set(true)
     }
 
-    private fun prepare() {
+    private fun prepareEncoder() {
         mBufferInfo = MediaCodec.BufferInfo()
         val format = MediaFormat.createVideoFormat(mime_type, mWidth,mHeight)
 
@@ -58,7 +56,9 @@ class MediaCodecHelp: Thread{
         mEncoder!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         mInputSurface = mEncoder!!.createInputSurface()
         mEncoder!!.start()
+    }
 
+    private fun prepareWriter() {
         //Output file
         val outputPath = File(outputdir, "test."+mWidth+"x"+mHeight+".mp4").toString()
         Log.d(TAG,"output file is "+outputPath)
@@ -72,7 +72,13 @@ class MediaCodecHelp: Thread{
         } catch (ioe: IOException) {
             throw RuntimeException("MediaMux create fail", ioe)
         }
+    }
 
+    private fun prepareSurfaceSource(mediaProjection: MediaProjection?) {
+        mMediaProjection = mediaProjection
+        mVirtualDisplay = mMediaProjection!!.createVirtualDisplay(TAG+"-display",
+                mWidth, mHeight,1, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+                mInputSurface, null, null)
     }
 
     private fun release() {

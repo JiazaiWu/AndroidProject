@@ -40,7 +40,6 @@ class MainActivity() : AppCompatActivity(), View.OnClickListener{
         Log.d("jiazai","to start recording")
         mScreenRecorder?.quit()
         mScreenRecorder = null
-
         val captureIntent = mMediaProjectionManager?.createScreenCaptureIntent()
         startActivityForResult(captureIntent, REQUEST_CODE)
     }
