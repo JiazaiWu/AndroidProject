@@ -11,12 +11,16 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity() : AppCompatActivity(), View.OnClickListener{
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        this.mButtom = start_record
+        this.mButtom.setOnClickListener(this)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
@@ -33,6 +37,7 @@ class MainActivity() : AppCompatActivity(), View.OnClickListener{
     }
 
     override fun onClick(p0: View?) {
+        Log.d("jiazai","to start recording")
         mScreenRecorder?.quit()
         mScreenRecorder = null
 
@@ -43,5 +48,6 @@ class MainActivity() : AppCompatActivity(), View.OnClickListener{
     private var mMediaProjectionManager: MediaProjectionManager? = null
     private var mScreenRecorder: MediaCodecHelp? = null
     private val REQUEST_CODE = 1
+    private lateinit var mButtom: Button
 
 }

@@ -35,7 +35,7 @@ class MediaCodecHelp: Thread{
                 drainEncoder(false)
             }
             drainEncoder(true)
-            Log.d(TAG,"test end")
+            Log.d(TAG,"test s")
         } finally {
             release()
         }
