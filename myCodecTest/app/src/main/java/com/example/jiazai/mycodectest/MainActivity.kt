@@ -19,8 +19,10 @@ class MainActivity() : AppCompatActivity(), View.OnClickListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        this.mButtom = start_record
-        this.mButtom.setOnClickListener(this)
+        this.startButtom = start_record
+        this.startButtom.setOnClickListener(this)
+        this.stopButtom = stop_record
+        this.stopButtom.setOnClickListener(this)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
@@ -37,16 +39,25 @@ class MainActivity() : AppCompatActivity(), View.OnClickListener{
     }
 
     override fun onClick(p0: View?) {
-        Log.d("jiazai","to start recording")
-        mScreenRecorder?.quit()
-        mScreenRecorder = null
-        val captureIntent = mMediaProjectionManager?.createScreenCaptureIntent()
-        startActivityForResult(captureIntent, REQUEST_CODE)
+        when(p0?.id) {
+            R.id.start_record-> {
+                Log.d("jiazai", "to start recording")
+                this.mScreenRecorder?.quit()
+                this.mScreenRecorder = null
+                val captureIntent = mMediaProjectionManager?.createScreenCaptureIntent()
+                startActivityForResult(captureIntent, REQUEST_CODE)
+            }
+            R.id.stop_record-> {
+                this.mScreenRecorder?.quit()
+                this.mScreenRecorder = null
+            }
+        }
     }
 
     private var mMediaProjectionManager: MediaProjectionManager? = null
     private var mScreenRecorder: MediaCodecHelp? = null
     private val REQUEST_CODE = 1
-    private lateinit var mButtom: Button
+    private lateinit var startButtom: Button
+    private lateinit var stopButtom: Button
 
 }

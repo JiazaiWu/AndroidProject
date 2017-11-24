@@ -29,11 +29,7 @@ class MediaCodecHelp: Thread{
 
     fun runRecording() {
         try {
-            for (i in 1 until maxframe) {
-                drainEncoder(false)
-            }
-            drainEncoder(true)
-            Log.d(TAG,"test s")
+            drainEncoder(mQuit.get())
         } finally {
             release()
         }
