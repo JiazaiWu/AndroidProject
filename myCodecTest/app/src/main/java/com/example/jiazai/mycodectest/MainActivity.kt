@@ -34,20 +34,21 @@ class MainActivity() : AppCompatActivity(), View.OnClickListener{
         super.onActivityResult(requestCode, resultCode, data)
         val mediaProjection = mMediaProjectionManager?.getMediaProjection(resultCode, data)
         mScreenRecorder = MediaCodecHelp(mediaProjection)
-        Log.d("jiazai","record thead start")
+        Log.d(TAG,"record thead start")
         mScreenRecorder?.start()
     }
 
     override fun onClick(p0: View?) {
         when(p0?.id) {
             R.id.start_record-> {
-                Log.d("jiazai", "to start recording")
+                Log.d(TAG, "to start recording")
                 this.mScreenRecorder?.quit()
                 this.mScreenRecorder = null
                 val captureIntent = mMediaProjectionManager?.createScreenCaptureIntent()
                 startActivityForResult(captureIntent, REQUEST_CODE)
             }
             R.id.stop_record-> {
+                Log.d(TAG, "to stop recording")
                 this.mScreenRecorder?.quit()
                 this.mScreenRecorder = null
             }
@@ -59,5 +60,6 @@ class MainActivity() : AppCompatActivity(), View.OnClickListener{
     private val REQUEST_CODE = 1
     private lateinit var startButtom: Button
     private lateinit var stopButtom: Button
+    private val TAG = "MainActivity"
 
 }

@@ -19,12 +19,19 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class MediaCodecHelp: Thread{
     constructor(mediaProjection: MediaProjection?) {
+        this.asyncmode = true
         prepareEncoder()
         prepareWriter()
         prepareSurfaceSource(mediaProjection)
     }
 
-    override fun run() = runRecording()
+    override fun run() {
+        if (this.asyncmode) {
+            Log.d(TAG, "async mode!!!")
+        } else {
+            runRecording()
+        }
+    }
 
 
     fun runRecording() {
@@ -49,9 +56,34 @@ class MediaCodecHelp: Thread{
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iframe)
 
         mEncoder = MediaCodec.createEncoderByType(mime_type)
-        mEncoder!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        mInputSurface = mEncoder!!.createInputSurface()
-        mEncoder!!.start()
+        mEncoder?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        mInputSurface = mEncoder?.createInputSurface()
+
+        /*use async mode*/
+        if (this.asyncmode) {
+            mEncoder?.setCallback(myCallBack())
+        }
+        mEncoder?.start()
+    }
+
+    inner class myCallBack: MediaCodec.Callback() {
+        override fun onOutputBufferAvailable(mc: MediaCodec?, outputBufferId: Int, bufferInfo: MediaCodec.BufferInfo?) {
+            Log.d(TAG, "output buffer available")
+            writeToTrack(outputBufferId)
+            mEncoder?.releaseOutputBuffer(outputBufferId, false)
+        }
+
+        override fun onInputBufferAvailable(p0: MediaCodec?, p1: Int) {
+            Log.d(TAG,"input buffer available")
+        }
+
+        override fun onOutputFormatChanged(p0: MediaCodec?, p1: MediaFormat?) {
+            resetOutputFormat()
+        }
+
+        override fun onError(p0: MediaCodec?, p1: MediaCodec.CodecException?) {
+            p1?.printStackTrace()
+        }
     }
 
     private fun prepareWriter() {
@@ -71,6 +103,7 @@ class MediaCodecHelp: Thread{
     }
 
     private fun prepareSurfaceSource(mediaProjection: MediaProjection?) {
+        Log.d(TAG, "prepare surface source'")
         mMediaProjection = mediaProjection
         mVirtualDisplay = mMediaProjection!!.createVirtualDisplay(TAG+"-display",
                 mWidth, mHeight,1, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
@@ -93,7 +126,7 @@ class MediaCodecHelp: Thread{
     private fun drainEncoder(endofstream: Boolean) {
         Log.d(TAG, "drainEncoder")
 
-        if (endofstream) {
+        if (endofstream) {asyncmode
             Log.d(TAG, "end of stream, sending EOS to encoder")
             mEncoder!!.signalEndOfInputStream()
         }
@@ -107,7 +140,6 @@ class MediaCodecHelp: Thread{
                     try {
                         Thread.sleep(10)
                     } catch (e: InterruptedException) {}
-                    break
                 } else {
                     Log.d(TAG, "no output availble, spinning to await EOS")
                 }
@@ -126,14 +158,12 @@ class MediaCodecHelp: Thread{
                     } else {
                         Log.d(TAG, "end of stream reached")
                     }
-                    break
                 }
             }
         }
     }
 
     private fun resetOutputFormat() {
-        Log.d(TAG,"output format changed")
         if (mMuxerStarted) {
             throw RuntimeException("format change")
         }
@@ -195,4 +225,5 @@ class MediaCodecHelp: Thread{
     private var mTrackIndex = -1
     private val outputdir = Environment.getExternalStorageDirectory()
     private val maxframe = 150 // 5s
+    private var asyncmode = false
 }
