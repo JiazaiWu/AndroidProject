@@ -1,4 +1,4 @@
-package com.example.jiazai.firstopengl;
+package com.example.jiazai.AirhockeyActivity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,7 +7,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 
-public class MainActivity extends AppCompatActivity {
+public class AirhockeyActivity extends AppCompatActivity {
 
     MyGLSurfaceView mySurfaceView;
 

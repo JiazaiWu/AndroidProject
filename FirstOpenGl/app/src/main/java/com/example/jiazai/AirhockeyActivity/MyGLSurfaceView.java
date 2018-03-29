@@ -1,4 +1,4 @@
-package com.example.jiazai.firstopengl;
+package com.example.jiazai.AirhockeyActivity;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

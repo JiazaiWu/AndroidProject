@@ -1,4 +1,4 @@
-package com.example.jiazai.firstopengl;
+package com.example.jiazai.AirhockeyActivity;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.jiazai.firstopengl", appContext.getPackageName());
+        assertEquals("com.example.jiazai.AirhockeyActivity", appContext.getPackageName());
     }
 }
