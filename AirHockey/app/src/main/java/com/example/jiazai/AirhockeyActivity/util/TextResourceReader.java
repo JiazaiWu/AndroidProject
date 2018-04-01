@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class TexrResourceReader {
+public class TextResourceReader {
 
     public static String readTextFileFromResource(Context context, int resourceId) {
         StringBuilder body = new StringBuilder();
