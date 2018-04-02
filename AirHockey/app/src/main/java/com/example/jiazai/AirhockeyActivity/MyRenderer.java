@@ -18,9 +18,12 @@ import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glDrawArrays;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
+import static android.opengl.GLES20.glGetUniformLocation;
+import static android.opengl.GLES20.glUniformMatrix4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
 import static android.opengl.GLES20.glViewport;
+import android.opengl.Matrix;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -37,6 +40,7 @@ import com.example.jiazai.AirhockeyActivity.util.*;
 import com.example.jiazai.AirhockeyActivity.util.TextResourceReader;
 
 public class MyRenderer implements Renderer {
+    private static final String U_MATRIX = "u_Matrix";
     private static final String A_POSITION = "a_Position";
     private static final String A_COLOR = "a_Color";
     private static final int POSITION_COMPONENT_COUNT = 2;
@@ -44,6 +48,8 @@ public class MyRenderer implements Renderer {
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE =
             (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
+    private final float[] projectionMatrix = new float[16];
+    private int uMatrixLoation;
 
     private final FloatBuffer vertexData;
     private final Context context;
@@ -84,15 +90,19 @@ public class MyRenderer implements Renderer {
 
                 // Triangle Fan
                 0f,    0f,   1f,   1f,   1f,
-                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-                0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-                0.5f,  0.5f, 0.7f, 0.7f, 0.7f,
-                -0.5f,  0.5f, 0.7f, 0.7f, 0.7f,
-                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.0f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.5f, 0.0f, 0.7f, 0.7f, 0.7f,
+                0.5f,  0.8f, 0.7f, 0.7f, 0.7f,
+                0.0f,  0.8f, 0.7f, 0.7f, 0.7f,
+                -0.5f,  0.8f, 0.7f, 0.7f, 0.7f,
+                -0.5f,  0.0f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
 
                 // Line 1
                 -0.5f, 0f, 1f, 0f, 0f,
-                0.5f, 0f, 1f, 0f, 0f,
+                0.5f, 0f, 0f, 0f, 1f,
 
                 // Mallets
                 0f, -0.25f, 0f, 0f, 1f,
@@ -129,6 +139,7 @@ public class MyRenderer implements Renderer {
 
         aPositionLocation = glGetAttribLocation(program, A_POSITION);
         aColorLocation = glGetAttribLocation(program, A_COLOR);
+        uMatrixLoation = glGetUniformLocation(program, U_MATRIX);
 
         // Bind our data, specified by the variable vertexData, to the vertex
         // attribute at location A_POSITION_LOCATION.
@@ -162,6 +173,13 @@ public class MyRenderer implements Renderer {
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         // Set the OpenGL viewport to fill the entire surface.
         glViewport(0, 0, width, height);
+        final float aspectRatio = width > height? (float)width/(float)height: (float)height/(float)width;
+
+        if (width > height) {
+            Matrix.orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+        } else {
+            Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+        }
     }
 
     /**
@@ -173,16 +191,18 @@ public class MyRenderer implements Renderer {
         // Clear the rendering surface.
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glUniformMatrix4fv(uMatrixLoation, 1, false, projectionMatrix, 0);
+
         // Draw the table.        
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 10);
 
         // Draw the center dividing line.        
-        glDrawArrays(GL_LINES, 6, 2);
+        glDrawArrays(GL_LINES, 10, 2);
 
         // Draw the first mallet.        
-        glDrawArrays(GL_POINTS, 8, 1);
+        glDrawArrays(GL_POINTS, 12, 1);
 
         // Draw the second mallet.
-        glDrawArrays(GL_POINTS, 9, 1);
+        glDrawArrays(GL_POINTS, 13, 1);
     }
 }
