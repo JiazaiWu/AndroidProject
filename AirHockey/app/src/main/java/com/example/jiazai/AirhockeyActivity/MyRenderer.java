@@ -43,12 +43,13 @@ public class MyRenderer implements Renderer {
     private static final String U_MATRIX = "u_Matrix";
     private static final String A_POSITION = "a_Position";
     private static final String A_COLOR = "a_Color";
-    private static final int POSITION_COMPONENT_COUNT = 2;
+    private static final int POSITION_COMPONENT_COUNT = 4;
     private static final int COLOR_COMPONENT_COUNT = 3;
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE =
             (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
     private final float[] projectionMatrix = new float[16];
+    private final float[] modelMatrix = new float[16];
     private int uMatrixLoation;
 
     private final FloatBuffer vertexData;
@@ -86,27 +87,23 @@ public class MyRenderer implements Renderer {
         // The next three numbers are part of the color: R, G, B
         //
         float[] tableVerticesWithTriangles = {
-                // Order of coordinates: X, Y, R, G, B
+                // Order of coordinates: X, Y, Z, W, R, G, B
 
                 // Triangle Fan
-                0f,    0f,   1f,   1f,   1f,
-                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
-                0.0f, -0.8f, 0.7f, 0.7f, 0.7f,
-                0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
-                0.5f, 0.0f, 0.7f, 0.7f, 0.7f,
-                0.5f,  0.8f, 0.7f, 0.7f, 0.7f,
-                0.0f,  0.8f, 0.7f, 0.7f, 0.7f,
-                -0.5f,  0.8f, 0.7f, 0.7f, 0.7f,
-                -0.5f,  0.0f, 0.7f, 0.7f, 0.7f,
-                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                   0f,    0f, 0f, 1.5f,   1f,   1f,   1f,
+                -0.5f, -0.8f, 0f,   1f, 0.7f, 0.7f, 0.7f,
+                 0.5f, -0.8f, 0f,   1f, 0.7f, 0.7f, 0.7f,
+                 0.5f,  0.8f, 0f,   2f, 0.7f, 0.7f, 0.7f,
+                -0.5f,  0.8f, 0f,   2f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0f,   1f, 0.7f, 0.7f, 0.7f,
 
                 // Line 1
-                -0.5f, 0f, 1f, 0f, 0f,
-                0.5f, 0f, 0f, 0f, 1f,
+                -0.5f,    0f, 0f, 1.5f,   1f,   0f,   0f,
+                 0.5f,    0f, 0f, 1.5f,   1f,   0f,   0f,
 
-                // Mallets
-                0f, -0.25f, 0f, 0f, 1f,
-                0f,  0.25f, 1f, 0f, 0f
+                //Mallets
+                   0f, -0.4f, 0f, 1.25f,   0f,   0f,   1f,
+                   0f,  0.4f, 0f, 1.75f,   1f,   0f,   0f
         };
 
         vertexData = ByteBuffer
@@ -173,13 +170,19 @@ public class MyRenderer implements Renderer {
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
         // Set the OpenGL viewport to fill the entire surface.
         glViewport(0, 0, width, height);
-        final float aspectRatio = width > height? (float)width/(float)height: (float)height/(float)width;
+        /*final float aspectRatio = width > height? (float)width/(float)height: (float)height/(float)width;
 
         if (width > height) {
             Matrix.orthoM(projectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
         } else {
             Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
-        }
+        }*/
+        MatrixHelper.perspectiveM(projectionMatrix, 45, (float)width/(float) (height), 1f, 10f);
+        Matrix.setIdentityM(modelMatrix, 0);
+        Matrix.translateM(modelMatrix, 0, 0f, 0f, -2f);
+        final float[] temp = new float[16];
+        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
     }
 
     /**
@@ -194,15 +197,15 @@ public class MyRenderer implements Renderer {
         glUniformMatrix4fv(uMatrixLoation, 1, false, projectionMatrix, 0);
 
         // Draw the table.        
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 10);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
 
         // Draw the center dividing line.        
-        glDrawArrays(GL_LINES, 10, 2);
+        glDrawArrays(GL_LINES, 6, 2);
 
         // Draw the first mallet.        
-        glDrawArrays(GL_POINTS, 12, 1);
+        glDrawArrays(GL_POINTS, 8, 1);
 
         // Draw the second mallet.
-        glDrawArrays(GL_POINTS, 13, 1);
+        glDrawArrays(GL_POINTS, 9, 1);
     }
 }
