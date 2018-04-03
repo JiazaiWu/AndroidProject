@@ -43,7 +43,7 @@ public class MyRenderer implements Renderer {
     private static final String U_MATRIX = "u_Matrix";
     private static final String A_POSITION = "a_Position";
     private static final String A_COLOR = "a_Color";
-    private static final int POSITION_COMPONENT_COUNT = 4;
+    private static final int POSITION_COMPONENT_COUNT = 2;
     private static final int COLOR_COMPONENT_COUNT = 3;
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE =
@@ -86,7 +86,7 @@ public class MyRenderer implements Renderer {
         // The first two numbers are part of the position: X, Y
         // The next three numbers are part of the color: R, G, B
         //
-        float[] tableVerticesWithTriangles = {
+        /*float[] tableVerticesWithTriangles = {
                 // Order of coordinates: X, Y, Z, W, R, G, B
 
                 // Triangle Fan
@@ -104,6 +104,26 @@ public class MyRenderer implements Renderer {
                 //Mallets
                    0f, -0.4f, 0f, 1.25f,   0f,   0f,   1f,
                    0f,  0.4f, 0f, 1.75f,   1f,   0f,   0f
+        };*/
+
+        float[] tableVerticesWithTriangles = {
+                // Order of coordinates: X, Y, Z, W, R, G, B
+
+                // Triangle Fan
+                0f,    0f,      1f,   1f,   1f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.5f, -0.8f,  0.7f, 0.7f, 0.7f,
+                0.5f,  0.8f,  0.7f, 0.7f, 0.7f,
+                -0.5f,  0.8f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+
+                // Line 1
+                -0.5f,   0f,    1f,   0f,   0f,
+                 0.5f,   0f,    1f,   0f,   0f,
+
+                //Mallets
+                0f, -0.4f,  0f,   0f,   1f,
+                0f,  0.4f,  1f,   0f,   0f
         };
 
         vertexData = ByteBuffer
@@ -179,7 +199,8 @@ public class MyRenderer implements Renderer {
         }*/
         MatrixHelper.perspectiveM(projectionMatrix, 45, (float)width/(float) (height), 1f, 10f);
         Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 0f, 0f, -2f);
+        Matrix.translateM(modelMatrix, 0, 0f, 0f, -3f);
+        Matrix.rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
         final float[] temp = new float[16];
         Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
         System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
