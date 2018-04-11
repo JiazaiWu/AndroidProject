@@ -22,7 +22,6 @@ public class ColorShaderProgram extends ShaderProgram {
     
     // Attribute locations
     private final int aPositionLocation;
-    private final int aColorLocation;
     private final int uColorLocation;
 
     public ColorShaderProgram(Context context) {
@@ -32,7 +31,6 @@ public class ColorShaderProgram extends ShaderProgram {
         uMatrixLocation = glGetUniformLocation(program, U_MATRIX);
         // Retrieve attribute locations for the shader program.
         aPositionLocation = glGetAttribLocation(program, A_POSITION);
-        aColorLocation = glGetAttribLocation(program, A_COLOR);
         uColorLocation = glGetUniformLocation(program, U_COLOR);
     }
     public void setUniforms(float[] matrix, float r, float g, float b) {
@@ -43,9 +41,5 @@ public class ColorShaderProgram extends ShaderProgram {
 
     public int getPositionAttributeLocation() {
         return aPositionLocation;
-    }
-
-    public int getColorAttributeLocation() {
-        return aColorLocation;
     }
 }

@@ -21,6 +21,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 
 import com.example.jiazai.AirhockeyActivity.object.Mallet;
+import com.example.jiazai.AirhockeyActivity.object.Puck;
 import com.example.jiazai.AirhockeyActivity.object.Table;
 import com.example.jiazai.AirhockeyActivity.programs.ColorShaderProgram;
 import com.example.jiazai.AirhockeyActivity.programs.TextureShaderProgram;
@@ -29,16 +30,35 @@ import com.example.jiazai.AirhockeyActivity.util.*;
 public class MyRenderer implements Renderer {
     private final Context context;
 
+    private final float[] viewMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
 
+    private final float[] viewProjectionMatrix = new float[16];
+    private final float[] modelViewProjectionMatrix = new float[16];
+
     private Table table;
     private Mallet mallet;
+    private Puck puck;
 
     private TextureShaderProgram textureProgram;
     private ColorShaderProgram colorProgram;
 
     private int texture;
+
+    private void positionTableInScene() {
+        // The table is defined in terms of X & Y coordinates, so we rotate it
+        // 90 degrees to lie flat on the XZ plane
+        Matrix.setIdentityM(modelMatrix, 0);
+        Matrix.rotateM(modelMatrix, 0, -90f, 1f, 0f, 0f);
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0 , viewProjectionMatrix, 0, modelMatrix, 0);
+    }
+
+    private void positionObjectInScene(float x, float y , float z) {
+        Matrix.setIdentityM(modelMatrix, 0);
+        Matrix.translateM(modelMatrix, 0, x, y ,z);
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0 ,viewProjectionMatrix, 0 , modelMatrix, 0);
+    }
 
     public MyRenderer(Context context) {
         this.context = context;
@@ -49,7 +69,8 @@ public class MyRenderer implements Renderer {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         table = new Table();
-        mallet = new Mallet();
+        mallet = new Mallet(0.08f, 0.15f, 32);
+        puck = new Puck(0.06f, 0.02f, 32);
 
         textureProgram = new TextureShaderProgram(context);
         colorProgram = new ColorShaderProgram(context);
@@ -76,13 +97,10 @@ public class MyRenderer implements Renderer {
         MatrixHelper.perspectiveM(projectionMatrix, 45, (float) width
                 / (float) height, 1f, 10f);
 
-        Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 0f, 0f, -2.5f);
-        Matrix.rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
-
-        final float[] temp = new float[16];
-        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
-        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
+        Matrix.setLookAtM(viewMatrix, 0,
+                0f, 1.2f, 2.2f,
+                0f ,0f , 0f,
+                0f, 1f, 0f);
     }
 
     /**
@@ -93,17 +111,34 @@ public class MyRenderer implements Renderer {
     public void onDrawFrame(GL10 glUnused) {
         // Clear the rendering surface.
         glClear(GL_COLOR_BUFFER_BIT);
+        Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
 
         // Draw the table.
+        positionTableInScene();
         textureProgram.useProgram();
-        textureProgram.setUniforms(projectionMatrix, texture);
+        textureProgram.setUniforms(modelViewProjectionMatrix, texture);
         table.bindData(textureProgram);
         table.draw();
 
         // Draw the mallets.
+        positionObjectInScene(0f, mallet.height/2f, -0.4f);
         colorProgram.useProgram();
-        colorProgram.setUniforms(projectionMatrix);
+        colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0f, 0f);
         mallet.bindData(colorProgram);
         mallet.draw();
+
+        positionObjectInScene(0f, mallet.height/2f, 0.4f);
+        colorProgram.useProgram();
+        colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);
+        /* Note that we don't have to define the object data twice -- we just
+        *  draw the same mallet again but in a different position and with a
+        *  different color*/
+        mallet.draw();
+
+        // Draw the puck
+        positionObjectInScene(0f, puck.height/2f, 0f);
+        colorProgram.setUniforms(modelViewProjectionMatrix, 0.8f, 0.8f, 1f);
+        puck.bindData(colorProgram);
+        puck.draw();
     }
 }

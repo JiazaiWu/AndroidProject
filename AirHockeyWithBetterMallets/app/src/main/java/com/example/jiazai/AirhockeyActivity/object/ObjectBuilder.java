@@ -132,6 +132,20 @@ public class ObjectBuilder {
         builder.appendCircle(baseCircle, numPoints);
         builder.appendOpenCylinder(baseCylinder, numPoints);
 
+        // Now generate the mallet handle.
+        float handleHeight = height * 0.75f;
+        float handleRadius = radius / 3f;
+
+        Circle handleCircle = new Circle(
+                center.translateY(height * 0.5f),
+                handleRadius);
+        Cylinder handleCylinder = new Cylinder(
+                handleCircle.center.translateY(-handleHeight / 2f),
+                handleRadius, handleHeight);
+
+        builder.appendCircle(handleCircle, numPoints);
+        builder.appendOpenCylinder(handleCylinder, numPoints);
+
         return builder.build();
     }
 }
