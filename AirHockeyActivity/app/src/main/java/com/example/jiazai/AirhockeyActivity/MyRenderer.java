@@ -52,6 +52,11 @@ public class MyRenderer implements Renderer {
     private boolean malletPressed = false;
     private Geometry.Point blueMallectPosition;
 
+    private final float leftBound = -0.5f;
+    private final float rightBound = 0.5f;
+    private final float farBound = -0.8f;
+    private final float nearBound = 0.8f;
+
     private void positionTableInScene() {
         // The table is defined in terms of X & Y coordinates, so we rotate it
         // 90 degrees to lie flat on the XZ plane
@@ -136,7 +141,7 @@ public class MyRenderer implements Renderer {
         mallet.bindData(colorProgram);
         mallet.draw();
 
-        positionObjectInScene(0f, mallet.height/2f, 0.4f);
+        positionObjectInScene(blueMallectPosition.x, blueMallectPosition.y, blueMallectPosition.z);
         colorProgram.useProgram();
         colorProgram.setUniforms(modelViewProjectionMatrix, 0f, 0f, 1f);
         /* Note that we don't have to define the object data twice -- we just
@@ -160,10 +165,25 @@ public class MyRenderer implements Renderer {
                 blueMallectPosition.x,
                 blueMallectPosition.y,
                 blueMallectPosition.z), mallet.height/2f);
+
+        // If the ray intersects (if the user touched a part of the screen that
+        // intersects the mallet's bounding sphere, then set malletPressed = true
+        malletPressed = Geometry.intersects(malletBoundingSphere, ray);
     }
 
     public void handleTouchDrag(float normalizedX, float normalizedY) {
-        Log.d("test", "drag event");
+        if (malletPressed) {
+            Geometry.Ray ray = convertNormalized2DPointToRay(normalizedX, normalizedY);
+            // Define a plane representing our air hockey table
+            Geometry.Plane plane = new Geometry.Plane(new Geometry.Point(0, 0, 0), new Geometry.Vector(0, 1, 0));
+            // Find out where the touched pont intersects the plane
+            // representing our table. we'll move the mallet along this plane
+            Geometry.Point touchedPoint = Geometry.intersectionPoint(ray, plane);
+            blueMallectPosition = new Geometry.Point(
+                    clamp(touchedPoint.x, leftBound+mallet.radius, rightBound-mallet.radius),
+                    mallet.height/2f,
+                    clamp(touchedPoint.z, 0f+mallet.radius, nearBound-mallet.radius));
+        }
     }
 
     private Geometry.Ray convertNormalized2DPointToRay(float normalizedX, float normalizedY) {
@@ -180,8 +200,8 @@ public class MyRenderer implements Renderer {
         Matrix.multiplyMV(nearPointWorld, 0 , invertedViewProjectionMatrix, 0, nearPointNdc, 0);
         Matrix.multiplyMV(farPointWoird, 0 , invertedViewProjectionMatrix, 0, farPointNdc, 0);
 
-        divideByW(nearPointNdc);
-        divideByW(farPointNdc);
+        divideByW(nearPointWorld);
+        divideByW(farPointWoird);
 
         Geometry.Point nearPointRay = new Geometry.Point(nearPointWorld[0], nearPointWorld[1], nearPointWorld[2]);
         Geometry.Point farPointRay = new Geometry.Point(farPointWoird[0], farPointWoird[1], farPointWoird[2]);
@@ -193,5 +213,9 @@ public class MyRenderer implements Renderer {
         vector[0] /= vector[3];
         vector[1] /= vector[3];
         vector[2] /= vector[3];
+    }
+
+    private float clamp(float value, float min, float max) {
+        return Math.min(max, Math.max(value, min));
     }
 }
