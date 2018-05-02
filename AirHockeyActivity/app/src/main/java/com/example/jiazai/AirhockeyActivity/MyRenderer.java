@@ -52,6 +52,7 @@ public class MyRenderer implements Renderer {
     private boolean malletPressed = false;
     private Geometry.Point blueMallectPosition;
     private Geometry.Point previousBlueMalletPosition;
+    private Geometry.Vector blueMallectVector;
 
     private Geometry.Point puckPosition;
     private Geometry.Vector puckVector;
@@ -93,6 +94,7 @@ public class MyRenderer implements Renderer {
         texture = TextureHelper.loadTexture(context, R.drawable.air_hockey_surface);
 
         blueMallectPosition = new Geometry.Point(0f, mallet.height/2f, 0.4f);
+        blueMallectVector = new Geometry.Vector(0f, 0f, 0f);
 
         puckPosition = new Geometry.Point(0f, puck.height/2f, 0f);
         puckVector = new Geometry.Vector(0f, 0f, 0f);
@@ -134,11 +136,13 @@ public class MyRenderer implements Renderer {
         puckPosition = puckPosition.translate(puckVector);
         if (puckPosition.x < leftBound + puck.radius
                 || puckPosition.x > rightBound - puck.radius) {
-            puckVector = new Geometry.Vector(-puckPosition.x, puckPosition.y, puckPosition.z);
+            puckVector = new Geometry.Vector(-puckVector.x, puckVector.y, puckVector.z);
+            puckVector = puckVector.scale(0.9f);
         }
-        if (puckVector.z < farBound + puck.radius
+        if (puckPosition.z < farBound + puck.radius
                 || puckPosition.z > nearBound - puck.radius) {
             puckVector = new Geometry.Vector(puckVector.x, puckVector.y, -puckVector.z);
+            puckVector = puckVector.scale(0.9f);
         }
         // Clamp the puck position
         puckPosition = new Geometry.Point(
@@ -146,7 +150,7 @@ public class MyRenderer implements Renderer {
                 puckPosition.y,
                 clamp(puckPosition.z, farBound + puck.radius, nearBound - puck.radius)
         );
-        puckVector = puckVector.scale(0.95f);
+        puckVector = puckVector.scale(0.98f);
 
         // Clear the rendering surface.
         glClear(GL_COLOR_BUFFER_BIT);
@@ -162,7 +166,7 @@ public class MyRenderer implements Renderer {
         positionObjectInScene(0f, mallet.height/2f, -0.4f);
         colorProgram.useProgram();
         colorProgram.setUniforms(modelViewProjectionMatrix, 1f, 0f, 0f);
-        mallet.bindData(colorProgrampreviousBlueMalletPosition);
+        mallet.bindData(colorProgram);
         mallet.draw();
 
         positionObjectInScene(blueMallectPosition.x, blueMallectPosition.y, blueMallectPosition.z);
@@ -190,7 +194,7 @@ public class MyRenderer implements Renderer {
                 blueMallectPosition.y,
                 blueMallectPosition.z), mallet.height/2f);
 
-        // If the ray intersects (if the user touched a part of the screen that
+        // If the ray intersects (if the user touched a partpuckPosition of the screen that
         // intersects the mallet's bounding sphere, then set malletPressed = true
         malletPressed = Geometry.intersects(malletBoundingSphere, ray);
     }
@@ -214,7 +218,15 @@ public class MyRenderer implements Renderer {
             if (distance < (puck.radius + mallet.radius)) {
                 // The mallets has struck the puck. Now send the puck flying
                 // based on the mallet velocity
-                puckVector = Geometry.vectorBetween(previousBlueMalletPosition, blueMallectPosition);
+                //puckVector = Geometry.vectorBetween(previousBlueMalletPosition, blueMallectPosition);
+                blueMallectVector = Geometry.vectorBetween(previousBlueMalletPosition, blueMallectPosition);
+                Geometry.Vector tVector = Geometry.vectorBetween(
+                        new Geometry.Point(blueMallectPosition.x, 0f, blueMallectPosition.z),
+                        new Geometry.Point(puckPosition.x, 0f, puckPosition.z));
+                Geometry.Vector sVector = tVector.scale(1/tVector.length());
+                puckVector = sVector.scale(sVector.dotProduct(blueMallectVector));
+                Log.d("test", "v x: "+puckVector.x+" y: "+puckVector.y+" z: "+puckVector.z);
+
             }
         }
     }
