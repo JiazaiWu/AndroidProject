@@ -6,18 +6,42 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
+
+    private Fruit[] furit = {
+            new Fruit("Apple", R.drawable.apple),
+            new Fruit("Banana", R.drawable.banana),
+            new Fruit("Orange", R.drawable.orange),
+            new Fruit("Pear", R.drawable.pear),
+            new Fruit("Grape", R.drawable.grape),
+            new Fruit("Pineapple", R.drawable.pineapple),
+            new Fruit("Strawberry", R.drawable.strawberry),
+            new Fruit("Cherry", R.drawable.cherry),
+            new Fruit("Mango", R.drawable.mango)
+    };
+    private List<Fruit> fruitList = new ArrayList<>();
+
+    private FruitAdapter adapter;
+
+    private SwipeRefreshLayout swipeRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +79,22 @@ public class MainActivity extends AppCompatActivity {
                         }).show();
             }
         });
+
+        initFruit();
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 3);
+        recyclerView.setLayoutManager(layoutManager);
+        adapter = new FruitAdapter(fruitList);
+        recyclerView.setAdapter(adapter);
+
+        swipeRefresh = findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshFruits();
+            }
+        });
     }
 
     @Override
@@ -82,5 +122,35 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    private void initFruit() {
+        fruitList.clear();
+        for (int i = 0; i < 50; i++) {
+            Random random = new Random();
+            int index = random.nextInt(furit.length);
+            fruitList.add(furit[index]);
+        }
+    }
+
+    private void refreshFruits() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        initFruit();
+                        adapter.notifyDataSetChanged();
+                        swipeRefresh.setRefreshing(false);
+                    }
+                });
+            }
+        }).start();
     }
 }
