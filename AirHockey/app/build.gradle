@@ -4,8 +4,8 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.example.jiazai.AirhockeyActivity"
-        minSdkVersion 22
-        targetSdkVersion 27
+        minSdkVersion 19
+        targetSdkVersion 19
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

@@ -78,7 +78,7 @@ public class MyRenderer implements Renderer {
 
         Matrix.setIdentityM(modelMatrix, 0);
         Matrix.translateM(modelMatrix, 0, 0f, 0f, -2.5f);
-        Matrix.rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
+        Matrix.rotateM(modelMatrix, 0, 0f, 1f, 0f, 0f);
 
         final float[] temp = new float[16];
         Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
@@ -95,10 +95,10 @@ public class MyRenderer implements Renderer {
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Draw the table.
-        textureProgram.useProgram();
-        textureProgram.setUniforms(projectionMatrix, texture);
-        table.bindData(textureProgram);
-        table.draw();
+        //textureProgram.useProgram();
+        //textureProgram.setUniforms(projectionMatrix, texture);
+        //table.bindData(textureProgram);
+        //table.draw();
 
         // Draw the mallets.
         colorProgram.useProgram();

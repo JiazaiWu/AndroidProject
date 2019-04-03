@@ -16,22 +16,29 @@ import com.example.jiazai.AirhockeyActivity.data.VertexArray;
 import com.example.jiazai.AirhockeyActivity.programs.ColorShaderProgram;
 
 public class Mallet {
+    int i = 0;
     private static final int POSITION_COMPONENT_COUNT = 2;
     private static final int COLOR_COMPONENT_COUNT = 3;
     private static final int STRIDE = 
         (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) 
         * BYTES_PER_FLOAT;
-    private static final float[] VERTEX_DATA = {
+    private static float[] VERTEX_DATA = {
         // Order of coordinates: X, Y, R, G, B
-        0f, -0.4f, 0f, 0f, 1f, 
-        0f,  0.4f, 1f, 0f, 0f };
-    private final VertexArray vertexArray;
+        0f,  0.4f, 0f, 0f, 1f,
+        0f,  -0.4f, 1f, 0f, 0f };
+    private VertexArray vertexArray;
 
     public Mallet() {
         vertexArray = new VertexArray(VERTEX_DATA);
     }
     
     public void bindData(ColorShaderProgram colorProgram) {
+        VERTEX_DATA[0] = (float)Math.sin(i)*0.5f;
+        VERTEX_DATA[1] = (float)Math.cos(i)*0.5f;
+        VERTEX_DATA[5] = -(float)Math.sin(i)*0.5f;
+        VERTEX_DATA[6] = -(float)Math.cos(i)*0.5f;
+        i++;
+        vertexArray = new VertexArray(VERTEX_DATA);
         vertexArray.setVertexAttribPointer(
             0,
             colorProgram.getPositionAttributeLocation(),
@@ -44,7 +51,7 @@ public class Mallet {
             STRIDE);
     }
 
-    public void draw() {        
+    public void draw() {
         glDrawArrays(GL_POINTS, 0, 2);
     }
 }
